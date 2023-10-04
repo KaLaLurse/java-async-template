@@ -39,6 +39,7 @@ import org.springframework.messaging.support.MessageBuilder;
 {%- if params.reactive === 'true' %}
 import reactor.core.publisher.Flux;
 {%- endif %}
+import business.mappings.LightMeasuredEntity;
 {%- for extraImport in imports %}
 import {{ extraImport }};
 {%- endfor %}
@@ -52,6 +53,13 @@ public class {{ className }} {
 	@Autowired
 	private StreamBridge streamBridge;
 {%- endif %}
+
+	@Autowired
+	private StreamBridge streamBridge;
+	@Autowired
+	private LightMeasuredMapper lightMeasuredMapper;
+	@Autowired
+	private LightMeasuredService lightMeasuredService;
 
 	public static void main(String[] args) {
 		SpringApplication.run({{ className }}.class);
@@ -110,9 +118,9 @@ public class {{ className }} {
 		{%- endif %}
 	@Bean
 	{{ funcSpec.functionSignature | safe }} {
-		return data -> {
-			// Add business logic here.	
-			logger.info(data.toString());
+		return event -> {
+			LightMeasuredEntity lightMeasuredEntity = lightMeasuredMapper.toLightMeasured(event);
+			lightMeasuredService.doBusinessLogic(lightMeasuredEntity);
 		};
 	}	
 	{%- else %}{#- it is a supplier. #}
@@ -142,12 +150,10 @@ public class {{ className }} {
 			{%- if funcSpec.multipleMessageComment %}
 	{{ funcSpec.multipleMessageComment }}
 			{%- endif %}
-	@Bean
+//	@Bean
 	{{ funcSpec.functionSignature | safe }} {
-		return () -> {
-			// Add business logic here.
-			return new {{ funcSpec.publishPayload | safe }}();
-		};
+			LightMeasuredEvent event = lightMeasuredMapper.toLightMeasuredEvent(lightMeasured);
+			streamBridge.send("doLightMeasured-out-0", event);
 	}
 		{%- endif %}{# dynamic #}
 	{%- endif %}{# supplier #}

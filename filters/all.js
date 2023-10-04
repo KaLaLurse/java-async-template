@@ -108,7 +108,8 @@ class SCSFunction {
     } else if (this.reactive) {
       ret = `public Supplier<Flux<${this.publishPayload}>> ${this.name}()`;
     } else {
-      ret = `public Supplier<${this.publishPayload}> ${this.name}()`;
+      // ret = `public Supplier<${this.publishPayload}> ${this.name}()`;
+      ret = `public void ${this.name}( LightMeasuredEntity lightMeasured )`;
     }
 
     return ret;
