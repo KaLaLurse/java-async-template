@@ -14,7 +14,7 @@ import java.util.function.Supplier;
 {%- endif %}
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactoryyyy;
+import org.slf4j.LoggerFactory;
 {%- if extraIncludes.dynamic and params.dynamicType === 'streamBridge' %}
 import org.springframework.beans.factory.annotation.Autowired;
 {%- endif %}
