@@ -39,10 +39,15 @@ import org.springframework.messaging.support.MessageBuilder;
 {%- if params.reactive === 'true' %}
 import reactor.core.publisher.Flux;
 {%- endif %}
-import business.mappings.LightMeasuredEntity;
 {%- for extraImport in imports %}
 import {{ extraImport }};
 {%- endfor %}
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.stream.function.StreamBridge;
+import business.mappings.*;
+import business.mappers.*;
+
 {% set className = [asyncapi.info(), params] | mainClassName %}
 @SpringBootApplication
 public class {{ className }} {
@@ -56,10 +61,16 @@ public class {{ className }} {
 
 	@Autowired
 	private StreamBridge streamBridge;
+
+	{% for funcName, funcSpec in funcs %}
+	{%- if funcSpec.type === 'consumer' %}
 	@Autowired
-	private LightMeasuredMapper lightMeasuredMapper;
+	private {{ funcSpec.subscribePayload | safe }}Mapper {{ funcSpec.subscribePayload | safe }}Mapper1;
 	@Autowired
-	private LightMeasuredService lightMeasuredService;
+	private {{ funcSpec.subscribePayload | safe }}Service {{ funcSpec.subscribePayload | safe }}Service1;
+
+	{%- endif %}
+	{%- endfor %}
 
 	public static void main(String[] args) {
 		SpringApplication.run({{ className }}.class);
@@ -119,9 +130,8 @@ public class {{ className }} {
 	@Bean
 	{{ funcSpec.functionSignature | safe }} {
 		return event -> {
-			%Eventklasse %eventObjekt = %mapper.%toEventklasse(%businessObjekt)
-			{{ funcSpec.businessLogicClass | safe }} lightMeasuredEntity = lightMeasuredMapper.toLightMeasured(event);
-			lightMeasuredService.doBusinessLogic(lightMeasuredEntity);
+			{{ funcSpec.subscribePayload | safe }}Entity entity ={{funcSpec.subscribePayload | safe}}Mapper1.to{{funcSpec.subscribePayload | safe}}Entity(event);
+			{{funcSpec.subscribePayload | safe}}Service1.on{{funcSpec.subscribePayload | safe}}(entity);
 		};
 	}	
 	{%- else %}{#- it is a supplier. #}
@@ -151,10 +161,10 @@ public class {{ className }} {
 			{%- if funcSpec.multipleMessageComment %}
 	{{ funcSpec.multipleMessageComment }}
 			{%- endif %}
-//	@Bean
+
 	{{ funcSpec.functionSignature | safe }} {
-			LightMeasuredEvent event = lightMeasuredMapper.toLightMeasuredEvent(lightMeasured);
-			streamBridge.send("doLightMeasured-out-0", event);
+			{{funcSpec.publishPayload | safe}} event = {{funcSpec.publishPayload | safe}}Mapper1.to{{funcSpec.publishPayload | safe}}(entity);
+			streamBridge.send("do{{funcSpec.publishPayload | safe}}-out-0", event);
 	}
 		{%- endif %}{# dynamic #}
 	{%- endif %}{# supplier #}

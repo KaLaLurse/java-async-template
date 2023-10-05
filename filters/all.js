@@ -96,11 +96,6 @@ class SCSFunction {
     return ret;
   }
 
-  get businessLogicClass()
-  {
-    return getBusinessLogicClass()
-  }
-
   getSupplierFunctionSignature() {
     let ret = '';
 
@@ -114,7 +109,7 @@ class SCSFunction {
       ret = `public Supplier<Flux<${this.publishPayload}>> ${this.name}()`;
     } else {
       // ret = `public Supplier<${this.publishPayload}> ${this.name}()`;
-      ret = `public void ${this.name}( LightMeasuredEntity lightMeasured )`;
+      ret = `public void ${this.name}( ${this.publishPayload}Entity entity )`;
     }
 
     return ret;
@@ -814,12 +809,10 @@ function getFunctionSpecs(asyncapi, params) {
         functionMap.set(name, functionSpec);
       }
       const payload = getPayloadClass(publish);
-      const businessLogicClass = getBusinessLogicClass(publish);
       if (!payload) {
         throw new Error(`Channel ${channelName}: no payload class has been defined.`);
       }
       functionSpec.publishPayload = payload;
-      functionSpec.businessLogicClass = businessLogicClass;
       functionSpec.publishChannel = channelName;
     }
 
@@ -939,9 +932,6 @@ function getMultipleMessageComment(pubOrSub) {
   return ret;
 }
 
-function getBusinessLogicClass(pubOrSub) {
-  return pubOrSub.message() + "Entity";
-}
 
 function getPayloadClass(pubOrSub) {
   let ret;
