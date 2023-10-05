@@ -119,7 +119,8 @@ public class {{ className }} {
 	@Bean
 	{{ funcSpec.functionSignature | safe }} {
 		return event -> {
-			LightMeasuredEntity lightMeasuredEntity = lightMeasuredMapper.toLightMeasured(event);
+			%Eventklasse %eventObjekt = %mapper.%toEventklasse(%businessObjekt)
+			{{ funcSpec.businessLogicClass | safe }} lightMeasuredEntity = lightMeasuredMapper.toLightMeasured(event);
 			lightMeasuredService.doBusinessLogic(lightMeasuredEntity);
 		};
 	}	
