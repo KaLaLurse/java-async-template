@@ -96,11 +96,6 @@ class SCSFunction {
     return ret;
   }
 
-  get businessLogicClass()
-  {
-    return getBusinessLogicClass()
-  }
-
   getSupplierFunctionSignature() {
     let ret = '';
 
@@ -814,12 +809,10 @@ function getFunctionSpecs(asyncapi, params) {
         functionMap.set(name, functionSpec);
       }
       const payload = getPayloadClass(publish);
-      const businessLogicClass = getBusinessLogicClass(publish);
       if (!payload) {
         throw new Error(`Channel ${channelName}: no payload class has been defined.`);
       }
       functionSpec.publishPayload = payload;
-      functionSpec.businessLogicClass = businessLogicClass;
       functionSpec.publishChannel = channelName;
     }
 
@@ -937,10 +930,6 @@ function getMultipleMessageComment(pubOrSub) {
   }
 
   return ret;
-}
-
-function getBusinessLogicClass(pubOrSub) {
-  return pubOrSub.message() + "Entity";
 }
 
 function getPayloadClass(pubOrSub) {
