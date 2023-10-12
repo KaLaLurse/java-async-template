@@ -65,9 +65,9 @@ public class {{ className }} {
 	{% for funcName, funcSpec in funcs %}
 	{%- if funcSpec.type === 'consumer' %}
 	@Autowired
-	private {{ funcSpec.subscribePayload | safe }}Mapper {{ funcSpec.subscribePayload | safe }}Mapper1;
+	private {{ funcSpec.subscribePayload | safe }}Mapper {{ funcSpec.objectPrefix | safe }}Mapper;
 	@Autowired
-	private {{ funcSpec.subscribePayload | safe }}Service {{ funcSpec.subscribePayload | safe }}Service1;
+	private {{ funcSpec.subscribePayload | safe }}Service {{ funcSpec.objectPrefix | safe }}Service;
 
 	{%- endif %}
 	{%- endfor %}
@@ -129,9 +129,9 @@ public class {{ className }} {
 		{%- endif %}
 	@Bean
 	{{ funcSpec.functionSignature | safe }} {
-		return event -> {
-			{{ funcSpec.subscribePayload | safe }}Entity entity ={{funcSpec.subscribePayload | safe}}Mapper1.to{{funcSpec.subscribePayload | safe}}Entity(event);
-			{{funcSpec.subscribePayload | safe}}Service1.on{{funcSpec.subscribePayload | safe}}(entity);
+		return {{ funcSpec.objectPrefix | safe }}Event -> {
+			{{ funcSpec.subscribePayload | safe }}Entity {{ funcSpec.objectPrefix | safe }}Entity = {{ funcSpec.objectPrefix | safe }}Mapper.to{{funcSpec.subscribePayload | safe}}Entity({{ funcSpec.objectPrefix | safe }}Event);
+			{{ funcSpec.objectPrefix | safe }}Service.on{{funcSpec.subscribePayload | safe}}({{ funcSpec.objectPrefix | safe }}Entity);
 		};
 	}	
 	{%- else %}{#- it is a supplier. #}
@@ -163,8 +163,8 @@ public class {{ className }} {
 			{%- endif %}
 
 	{{ funcSpec.functionSignature | safe }} {
-			{{funcSpec.publishPayload | safe}} event = {{funcSpec.publishPayload | safe}}Mapper1.to{{funcSpec.publishPayload | safe}}(entity);
-			streamBridge.send("do{{funcSpec.publishPayload | safe}}-out-0", event);
+			{{funcSpec.publishPayload | safe}} {{ funcSpec.objectPrefix | safe }}Event = {{ funcSpec.objectPrefix | safe }}Mapper.to{{funcSpec.publishPayload | safe}}({{ funcSpec.objectPrefix | safe }}Entity);
+			streamBridge.send("do{{funcSpec.publishPayload | safe}}-out-0", {{ funcSpec.objectPrefix | safe }}Event);
 	}
 		{%- endif %}{# dynamic #}
 	{%- endif %}{# supplier #}

@@ -109,7 +109,8 @@ class SCSFunction {
       ret = `public Supplier<Flux<${this.publishPayload}>> ${this.name}()`;
     } else {
       // ret = `public Supplier<${this.publishPayload}> ${this.name}()`;
-      ret = `public void ${this.name}( ${this.publishPayload}Entity entity )`;
+      let objectPrefix = getObjectNameForClassName(this.publishPayload);
+      ret = `public void ${this.name}( ${this.publishPayload}Entity ${objectPrefix}Entity )`;
     }
 
     return ret;
@@ -764,6 +765,10 @@ function getFunctionDefinitions(asyncapi, params) {
   return ret;
 }
 
+function getObjectNameForClassName(classname) {
+  return classname.charAt(0).toLowerCase() + classname.slice(1);
+}
+
 function getFunctionSpecs(asyncapi, params) {
   // This maps function names to SCS function definitions.
 
@@ -776,6 +781,7 @@ function getFunctionSpecs(asyncapi, params) {
   const functionMap = new Map();
   const reactive = params.reactive === 'true';
   const info = asyncapi.info();
+  let testPayload;
 
   for (const channelName in asyncapi.channels()) {
     const channel = asyncapi.channels()[channelName];
@@ -813,6 +819,8 @@ function getFunctionSpecs(asyncapi, params) {
         throw new Error(`Channel ${channelName}: no payload class has been defined.`);
       }
       functionSpec.publishPayload = payload;
+      testPayload = getObjectNameForClassName(payload);
+      functionSpec.objectPrefix = testPayload;
       functionSpec.publishChannel = channelName;
     }
 
@@ -888,6 +896,8 @@ function getFunctionSpecs(asyncapi, params) {
           throw new Error(`Channel ${channelName}: no payload class has been defined.`);
         }
         functionSpec.subscribePayload = payload;
+        testPayload = getObjectNameForClassName(payload);
+        functionSpec.objectPrefix = testPayload;
       }
       const group = subscribe.ext('x-scs-group');
       if (group) {
