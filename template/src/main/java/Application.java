@@ -45,10 +45,14 @@ import {{ extraImport }};
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.stream.function.StreamBridge;
+import org.springframework.context.annotation.ComponentScan;
 import business.mappings.*;
 import business.mappers.*;
+import business.services.*;
 
 {% set className = [asyncapi.info(), params] | mainClassName %}
+
+@ComponentScan("business.*")
 @SpringBootApplication
 public class {{ className }} {
 
@@ -57,7 +61,7 @@ public class {{ className }} {
 
 	@Autowired
 	private StreamBridge streamBridge;
-{%- endif %}
+	{%- endif %}
 
 	@Autowired
 	private StreamBridge streamBridge;
@@ -68,8 +72,10 @@ public class {{ className }} {
 	private {{ funcSpec.subscribePayload | safe }}Mapper {{ funcSpec.objectPrefix | safe }}Mapper;
 	@Autowired
 	private {{ funcSpec.subscribePayload | safe }}Service {{ funcSpec.objectPrefix | safe }}Service;
-
-	{%- endif %}
+	{% elif funcSpec.type === 'supplier' %}
+	@Autowired
+	private {{ funcSpec.publishPayload | safe }}Mapper {{ funcSpec.objectPrefix | safe }}Mapper;
+	{%endif%}
 	{%- endfor %}
 
 	public static void main(String[] args) {
@@ -164,7 +170,7 @@ public class {{ className }} {
 
 	{{ funcSpec.functionSignature | safe }} {
 			{{funcSpec.publishPayload | safe}} {{ funcSpec.objectPrefix | safe }}Event = {{ funcSpec.objectPrefix | safe }}Mapper.to{{funcSpec.publishPayload | safe}}({{ funcSpec.objectPrefix | safe }}Entity);
-			streamBridge.send("do{{funcSpec.publishPayload | safe}}-out-0", {{ funcSpec.objectPrefix | safe }}Event);
+			streamBridge.send("do{{funcSpec.publishPayload | safe}}-out-0", "kafka", {{ funcSpec.objectPrefix | safe }}Event);
 	}
 		{%- endif %}{# dynamic #}
 	{%- endif %}{# supplier #}
